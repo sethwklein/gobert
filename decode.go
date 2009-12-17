@@ -5,6 +5,9 @@ package bert
 
 import (
 	"bytes";
+	"encoding/binary";
+	"io";
+	"io/ioutil";
 )
 
 const (
@@ -32,28 +35,33 @@ var (
 
 type Term interface{}
 
-func readBytes(buf *bytes.Buffer, bytes int) int {
-	var n = 0;
-	var c byte;
-
-	for b := uint8(bytes * 8); b > 0; {
-		b -= 8;
-		c, _ = buf.ReadByte();
-		n += int(c) << b;
-	}
-
-	return n;
+func read1(buf *bytes.Buffer) int {
+	ui4, _ := buf.ReadByte();
+	return int(ui4);
 }
 
-func readSmallInt(buf *bytes.Buffer) int	{ return readBytes(buf, 1) }
+func read2(buf *bytes.Buffer) int {
+	bits, _ := ioutil.ReadAll(io.LimitReader(buf, 2));
+        ui16 := binary.BigEndian.Uint16(bits);
+        return int(ui16);
+}
+
+func read4(buf *bytes.Buffer) int {
+	bits, _ := ioutil.ReadAll(io.LimitReader(buf, 4));
+        ui32 := binary.BigEndian.Uint32(bits);
+        return int(ui32);
+}
+
+func readSmallInt(buf *bytes.Buffer) int {
+	return read1(buf);
+}
 
 func readInt(buf *bytes.Buffer) int {
-	var value = readBytes(buf, 4);
-	return value;
+	return read4(buf)
 }
 
 func readAtom(buf *bytes.Buffer) string {
-	var size = readBytes(buf, 2);
+	var size = read2(buf);
 	var str = buf.Bytes()[0:size];
 	for i := 0; i < size; i++ {
 		buf.ReadByte()
@@ -62,7 +70,7 @@ func readAtom(buf *bytes.Buffer) string {
 }
 
 func readSmallTuple(buf *bytes.Buffer) Term {
-	var size = readBytes(buf, 1);
+	var size = read1(buf);
 	tuple := make([]Term, size);
 
 	if bytes.HasPrefix(buf.Bytes(), ComplexBert) {
@@ -83,7 +91,7 @@ func readNil(buf *bytes.Buffer) []Term {
 }
 
 func readString(buf *bytes.Buffer) string {
-	var size = readBytes(buf, 2);
+	var size = read2(buf);
 	var str = buf.Bytes()[0:size];
 	for i := 0; i < size; i++ {
 		buf.ReadByte()
@@ -92,7 +100,7 @@ func readString(buf *bytes.Buffer) string {
 }
 
 func readList(buf *bytes.Buffer) []Term {
-	var size = readBytes(buf, 4);
+	var size = read4(buf);
 	list := make([]Term, size);
 
 	for i := 0; i < size; i++ {
@@ -105,7 +113,7 @@ func readList(buf *bytes.Buffer) []Term {
 }
 
 func readBin(buf *bytes.Buffer) string {
-	var size = readBytes(buf, 4);
+	var size = read4(buf);
 	var str = buf.Bytes()[0:size];
 	return string(str);
 }
