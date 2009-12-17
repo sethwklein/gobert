@@ -42,35 +42,27 @@ func read1(buf *bytes.Buffer) int {
 
 func read2(buf *bytes.Buffer) int {
 	bits, _ := ioutil.ReadAll(io.LimitReader(buf, 2));
-        ui16 := binary.BigEndian.Uint16(bits);
-        return int(ui16);
+	ui16 := binary.BigEndian.Uint16(bits);
+	return int(ui16);
 }
 
 func read4(buf *bytes.Buffer) int {
 	bits, _ := ioutil.ReadAll(io.LimitReader(buf, 4));
-        ui32 := binary.BigEndian.Uint32(bits);
-        return int(ui32);
+	ui32 := binary.BigEndian.Uint32(bits);
+	return int(ui32);
 }
 
-func readSmallInt(buf *bytes.Buffer) int {
-	return read1(buf);
-}
+func readSmallInt(buf *bytes.Buffer) int	{ return read1(buf) }
 
-func readInt(buf *bytes.Buffer) int {
-	return read4(buf)
-}
+func readInt(buf *bytes.Buffer) int	{ return read4(buf) }
 
 func readAtom(buf *bytes.Buffer) string {
-	var size = read2(buf);
-	var str = buf.Bytes()[0:size];
-	for i := 0; i < size; i++ {
-		buf.ReadByte()
-	}
-	return string(str);
+	// Go doesn't have atom so treat them like strings
+	return readString(buf)
 }
 
 func readSmallTuple(buf *bytes.Buffer) Term {
-	var size = read1(buf);
+	size := read1(buf);
 	tuple := make([]Term, size);
 
 	if bytes.HasPrefix(buf.Bytes(), ComplexBert) {
@@ -91,16 +83,13 @@ func readNil(buf *bytes.Buffer) []Term {
 }
 
 func readString(buf *bytes.Buffer) string {
-	var size = read2(buf);
-	var str = buf.Bytes()[0:size];
-	for i := 0; i < size; i++ {
-		buf.ReadByte()
-	}
+	size := int64(read2(buf));
+	str, _ := ioutil.ReadAll(io.LimitReader(buf, size));
 	return string(str);
 }
 
 func readList(buf *bytes.Buffer) []Term {
-	var size = read4(buf);
+	size := read4(buf);
 	list := make([]Term, size);
 
 	for i := 0; i < size; i++ {
@@ -113,30 +102,24 @@ func readList(buf *bytes.Buffer) []Term {
 }
 
 func readBin(buf *bytes.Buffer) string {
-	var size = read4(buf);
-	var str = buf.Bytes()[0:size];
+	size := read4(buf);
+	str := buf.Bytes()[0:size];
 	return string(str);
 }
 
 func readComplex(buf *bytes.Buffer) Term {
 	if bytes.HasPrefix(buf.Bytes(), ComplexNil) {
-		for i := 0; i < len(ComplexNil); i++ {
-			buf.ReadByte()
-		}
+		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexNil))));
 		return nil;
 	}
 
 	if bytes.HasPrefix(buf.Bytes(), ComplexTrue) {
-		for i := 0; i < len(ComplexTrue); i++ {
-			buf.ReadByte()
-		}
+		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexTrue))));
 		return true;
 	}
 
 	if bytes.HasPrefix(buf.Bytes(), ComplexFalse) {
-		for i := 0; i < len(ComplexFalse); i++ {
-			buf.ReadByte()
-		}
+		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexFalse))));
 		return false;
 	}
 
@@ -144,7 +127,7 @@ func readComplex(buf *bytes.Buffer) Term {
 }
 
 func readTag(buf *bytes.Buffer) Term {
-	var tag, _ = buf.ReadByte();
+	tag, _ := buf.ReadByte();
 	switch tag {
 	case SmallInt:
 		return readSmallInt(buf)
@@ -176,9 +159,9 @@ func readTag(buf *bytes.Buffer) Term {
 }
 
 func Decode(data []byte) Term {
-	var buf = bytes.NewBuffer(data);
+	buf := bytes.NewBuffer(data);
 
-	var version, _ = buf.ReadByte();
+	version, _ := buf.ReadByte();
 
 	// check protocol version
 	if version != Version {
