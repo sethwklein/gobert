@@ -4,7 +4,6 @@
 package bert
 
 import (
-	"os";
 	"bytes";
 )
 
@@ -178,7 +177,7 @@ func Decode(data []byte) Term {
 	// check protocol version
 	if version != Version {
 		// Bad magic
-		os.Exit(1)
+		return -1
 	}
 
 	return readTag(buf);
