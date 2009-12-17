@@ -45,20 +45,6 @@ func readBytes(buf *bytes.Buffer, bytes int) int {
 	return n;
 }
 
-
-func readList(buf *bytes.Buffer) []Term {
-	var size = readBytes(buf, 4);
-	list := make([]Term, size);
-
-	for i := 0; i < size; i++ {
-		list[i] = readTag(buf)
-	}
-
-	buf.ReadByte();
-
-	return list;
-}
-
 func readSmallInt(buf *bytes.Buffer) int	{ return readBytes(buf, 1) }
 
 func readInt(buf *bytes.Buffer) int {
@@ -90,6 +76,12 @@ func readSmallTuple(buf *bytes.Buffer) Term {
 	return tuple;
 }
 
+func readNil(buf *bytes.Buffer) []Term {
+	buf.ReadByte();
+	list := make([]Term, 0);
+	return list;
+}
+
 func readString(buf *bytes.Buffer) string {
 	var size = readBytes(buf, 2);
 	var str = buf.Bytes()[0:size];
@@ -99,9 +91,16 @@ func readString(buf *bytes.Buffer) string {
 	return string(str);
 }
 
-func readNil(buf *bytes.Buffer) []Term {
+func readList(buf *bytes.Buffer) []Term {
+	var size = readBytes(buf, 4);
+	list := make([]Term, size);
+
+	for i := 0; i < size; i++ {
+		list[i] = readTag(buf)
+	}
+
 	buf.ReadByte();
-	list := make([]Term, 0);
+
 	return list;
 }
 
@@ -167,7 +166,6 @@ func readTag(buf *bytes.Buffer) Term {
 
 	return -1;
 }
-
 
 func Decode(data []byte) Term {
 	var buf = bytes.NewBuffer(data);
