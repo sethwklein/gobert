@@ -24,6 +24,13 @@ const (
 	Bin		= 109;
 )
 
+var (
+	ComplexBert	= []uint8{100, 0, 4, 98, 101, 114, 116, 100};
+	ComplexNil	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108};
+	ComplexTrue	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101};
+	ComplexFalse	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101};
+)
+
 type Term interface{}
 
 func readBytes(buf *bytes.Buffer, bytes int) int {
@@ -69,9 +76,13 @@ func readAtom(buf *bytes.Buffer) string {
 	return string(str);
 }
 
-func readSmallTuple(buf *bytes.Buffer) []Term {
+func readSmallTuple(buf *bytes.Buffer) Term {
 	var size = readBytes(buf, 1);
 	tuple := make([]Term, size);
+
+	if bytes.HasPrefix(buf.Bytes(), ComplexBert) {
+		return readComplex(buf)
+	}
 
 	for i := 0; i < size; i++ {
 		tuple[i] = readTag(buf)
@@ -101,6 +112,30 @@ func readBin(buf *bytes.Buffer) string {
 	return string(str);
 }
 
+func readComplex(buf *bytes.Buffer) Term {
+	if bytes.HasPrefix(buf.Bytes(), ComplexNil) {
+		for i := 0; i < len(ComplexNil); i++ {
+			buf.ReadByte()
+		}
+		return nil;
+	}
+
+	if bytes.HasPrefix(buf.Bytes(), ComplexTrue) {
+		for i := 0; i < len(ComplexTrue); i++ {
+			buf.ReadByte()
+		}
+		return true;
+	}
+
+	if bytes.HasPrefix(buf.Bytes(), ComplexFalse) {
+		for i := 0; i < len(ComplexFalse); i++ {
+			buf.ReadByte()
+		}
+		return false;
+	}
+
+	return nil;
+}
 
 func readTag(buf *bytes.Buffer) Term {
 	var tag, _ = buf.ReadByte();

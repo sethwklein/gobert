@@ -47,6 +47,11 @@ func TestDecode(t *testing.T) {
 
 	// Binary
 	assertDecode(t, []byte{131, 109, 0, 0, 0, 3, 102, 111, 111}, "foo");
+
+	// Complex
+	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108}, nil);
+	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101}, true);
+	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101}, false);
 }
 
 func assertDecode(t *testing.T, data []byte, expected interface{}) {
