@@ -102,8 +102,8 @@ func readList(buf *bytes.Buffer) []Term {
 }
 
 func readBin(buf *bytes.Buffer) string {
-	size := read4(buf);
-	str := buf.Bytes()[0:size];
+	size := int64(read4(buf));
+	str, _ := ioutil.ReadAll(io.LimitReader(buf, size));
 	return string(str);
 }
 
