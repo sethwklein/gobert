@@ -12,19 +12,19 @@ import (
 )
 
 const (
-	Version		= 131;
-	SmallInt	= 97;
-	Int		= 98;
-	SmallBignum	= 110;
-	LargeBignum	= 111;
-	Float		= 99;
-	Atom		= 100;
-	SmallTuple	= 104;
-	LargeTuple	= 105;
-	Nil		= 106;
-	String		= 107;
-	List		= 108;
-	Bin		= 109;
+	VersionTag	= 131;
+	SmallIntTag	= 97;
+	IntTag		= 98;
+	SmallBignumTag	= 110;
+	LargeBignumTag	= 111;
+	FloatTag	= 99;
+	AtomTag		= 100;
+	SmallTupleTag	= 104;
+	LargeTupleTag	= 105;
+	NilTag		= 106;
+	StringTag	= 107;
+	ListTag		= 108;
+	BinTag		= 109;
 )
 
 var (
@@ -33,6 +33,8 @@ var (
 	ComplexTrue	= []uint8{100, 0, 4, 116, 114, 117, 101};
 	ComplexFalse	= []uint8{100, 0, 5, 102, 97, 108, 115, 101};
 )
+
+type Atom string
 
 type Error struct {
 	os.ErrorString;
@@ -80,9 +82,9 @@ func readInt(buf *bytes.Buffer) (int, os.Error) {
 	return read4(buf)
 }
 
-func readAtom(buf *bytes.Buffer) (string, os.Error) {
-	// Go doesn't have atom so treat them like strings
-	return readString(buf)
+func readAtom(buf *bytes.Buffer) (Atom, os.Error) {
+	str, err := readString(buf);
+	return Atom(str), err;
 }
 
 func readSmallTuple(buf *bytes.Buffer) (Term, os.Error) {
@@ -190,29 +192,29 @@ func readTag(buf *bytes.Buffer) (Term, os.Error) {
 	}
 
 	switch tag {
-	case SmallInt:
+	case SmallIntTag:
 		return readSmallInt(buf)
-	case Int:
+	case IntTag:
 		return readInt(buf)
-	case SmallBignum:
+	case SmallBignumTag:
 		return nil, ErrUnknownType
-	case LargeBignum:
+	case LargeBignumTag:
 		return nil, ErrUnknownType
-	case Float:
+	case FloatTag:
 		return nil, ErrUnknownType
-	case Atom:
+	case AtomTag:
 		return readAtom(buf)
-	case SmallTuple:
+	case SmallTupleTag:
 		return readSmallTuple(buf)
-	case LargeTuple:
+	case LargeTupleTag:
 		return nil, ErrUnknownType
-	case Nil:
+	case NilTag:
 		return readNil(buf)
-	case String:
+	case StringTag:
 		return readString(buf)
-	case List:
+	case ListTag:
 		return readList(buf)
-	case Bin:
+	case BinTag:
 		return readBin(buf)
 	}
 
@@ -229,7 +231,7 @@ func Decode(data []byte) (Term, os.Error) {
 	}
 
 	// check protocol version
-	if version != Version {
+	if version != VersionTag {
 		return nil, ErrBadMagic
 	}
 
