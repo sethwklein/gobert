@@ -55,8 +55,10 @@ func TestDecode(t *testing.T) {
 }
 
 func assertDecode(t *testing.T, data []byte, expected interface{}) {
-	val := Decode(data);
-	if !reflect.DeepEqual(val, expected) {
+	val, err := Decode(data);
+	if err != nil {
+		t.Errorf("Decode(%v) returned error '%v'", data, err)
+	} else if !reflect.DeepEqual(val, expected) {
 		t.Errorf("Decode(%v) = %v, expected %v", data, val, expected)
 	}
 }
