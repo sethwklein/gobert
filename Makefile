@@ -9,3 +9,6 @@ GOTESTFILES=\
 	struct_test.go
 
 include $(GOROOT)/src/Make.pkg
+
+format:
+	echo $(GOFILES) $(GOTESTFILES) | xargs gofmt -w
