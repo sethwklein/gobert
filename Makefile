@@ -2,8 +2,10 @@ include $(GOROOT)/src/Make.$(GOARCH)
 
 TARG=bert
 GOFILES=\
-	decode.go
+	decode.go\
+	struct.go
 GOTESTFILES=\
-	decode_test.go
+	decode_test.go\
+	struct_test.go
 
 include $(GOROOT)/src/Make.pkg
