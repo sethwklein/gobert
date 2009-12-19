@@ -39,6 +39,7 @@ type Error struct {
 }
 
 var ErrBadMagic os.Error = &Error{"bad magic"}
+var ErrUnknownType os.Error = &Error{"unknown type"}
 
 type Term interface{}
 
@@ -193,17 +194,17 @@ func readTag(buf *bytes.Buffer) (Term, os.Error) {
 	case Int:
 		return readInt(buf)
 	case SmallBignum:
-		return -1, nil
+		return nil, ErrUnknownType
 	case LargeBignum:
-		return -1, nil
+		return nil, ErrUnknownType
 	case Float:
-		return -1, nil
+		return nil, ErrUnknownType
 	case Atom:
 		return readAtom(buf)
 	case SmallTuple:
 		return readSmallTuple(buf)
 	case LargeTuple:
-		return -1, nil
+		return nil, ErrUnknownType
 	case Nil:
 		return readNil(buf)
 	case String:
@@ -214,7 +215,7 @@ func readTag(buf *bytes.Buffer) (Term, os.Error) {
 		return readBin(buf)
 	}
 
-	return nil, nil;
+	return nil, ErrUnknownType;
 }
 
 func Decode(data []byte) (Term, os.Error) {
