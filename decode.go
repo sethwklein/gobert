@@ -28,10 +28,10 @@ const (
 )
 
 var (
-	ComplexBert	= []uint8{100, 0, 4, 98, 101, 114, 116, 100};
-	ComplexNil	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108};
-	ComplexTrue	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101};
-	ComplexFalse	= []uint8{100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101};
+	ComplexBert	= []uint8{100, 0, 4, 98, 101, 114, 116};
+	ComplexNil	= []uint8{100, 0, 3, 110, 105, 108};
+	ComplexTrue	= []uint8{100, 0, 4, 116, 114, 117, 101};
+	ComplexFalse	= []uint8{100, 0, 5, 102, 97, 108, 115, 101};
 )
 
 type Error struct {
@@ -94,7 +94,8 @@ func readSmallTuple(buf *bytes.Buffer) (Term, os.Error) {
 	tuple := make([]Term, size);
 
 	if bytes.HasPrefix(buf.Bytes(), ComplexBert) {
-		return readComplex(buf), nil
+		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexBert))));
+		return readComplex(buf), nil;
 	}
 
 	for i := 0; i < size; i++ {
