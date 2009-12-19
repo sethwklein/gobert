@@ -5,8 +5,16 @@ import (
 	"reflect";
 )
 
-type Result struct {
-	Name string;
+type Request struct {
+	Kind		string;
+	Module		string;
+	Function	string;
+	Arguments	[]int;
+}
+
+type Response struct {
+	Kind	string;
+	Result	string;
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -30,6 +38,8 @@ func TestUnmarshal(t *testing.T) {
 	assertEqual(t, "foo", c.First);
 	assertEqual(t, "bar", c.Second);
 
+	// var req Request;
+	// Unmarshal([]byte{131, 104, 4, 100, 0, 4, 99, 97, 108, 108, 100, 0, 6, 112, 104, 111, 116, 111, 120, 100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101, 107, 0, 1, 99}, &req);
 }
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {

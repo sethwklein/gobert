@@ -30,9 +30,28 @@ func TestDecode(t *testing.T) {
 
 	// Small Tuple
 	assertDecode(t, []byte{131, 104, 0}, []Term{});
-	assertDecode(t, []byte{131, 104, 1, 100, 0, 3, 102, 111, 111}, []Term{"foo"});
-	assertDecode(t, []byte{131, 104, 2, 100, 0, 3, 102, 111, 111, 100, 0, 3, 98, 97, 114}, []Term{"foo", "bar"});
-	assertDecode(t, []byte{131, 104, 3, 100, 0, 5, 99, 111, 111, 114, 100, 97, 23, 97, 42}, []Term{"coord", 23, 42});
+	assertDecode(t, []byte{131, 104, 1,
+		100, 0, 3, 102, 111, 111,
+	},
+		[]Term{"foo"});
+	assertDecode(t, []byte{131, 104, 2,
+		100, 0, 3, 102, 111, 111,
+		100, 0, 3, 98, 97, 114,
+	},
+		[]Term{"foo", "bar"});
+	assertDecode(t, []byte{131, 104, 3,
+		100, 0, 5, 99, 111, 111, 114, 100,
+		97, 23,
+		97, 42,
+	},
+		[]Term{"coord", 23, 42});
+	// assertDecode(t, []byte{131, 104, 4,
+	// 	100, 0, 4, 99, 97, 108, 108,
+	// 	100, 0, 6, 112, 104, 111, 116, 111, 120,
+	// 	100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
+	// 	107, 0, 1, 99,
+	// },
+	// 	[]Term{"call", "photox", "img_size", []Term{99}});
 
 	// Large Tuple
 
