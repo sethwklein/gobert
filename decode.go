@@ -152,18 +152,18 @@ func readList(buf *bytes.Buffer) ([]Term, os.Error) {
 	return list, nil;
 }
 
-func readBin(buf *bytes.Buffer) (string, os.Error) {
+func readBin(buf *bytes.Buffer) ([]uint8, os.Error) {
 	size, err := read4(buf);
 	if err != nil {
-		return "", err
+		return []uint8{}, err
 	}
 
-	str, err := ioutil.ReadAll(io.LimitReader(buf, int64(size)));
+	bytes, err := ioutil.ReadAll(io.LimitReader(buf, int64(size)));
 	if err != nil {
-		return "", err
+		return []uint8{}, err
 	}
 
-	return string(str), nil;
+	return bytes, nil;
 }
 
 func readComplex(buf *bytes.Buffer) Term {

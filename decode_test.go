@@ -65,7 +65,7 @@ func TestDecode(t *testing.T) {
 	//assertDecode(t, []byte{131, 108, 0, 0, 0, 2, 100, 0, 1, 97, 107, 0, 2, 1, 2, 106}, []Term{"a", []Term{1, 2}});
 
 	// Binary
-	assertDecode(t, []byte{131, 109, 0, 0, 0, 3, 102, 111, 111}, "foo");
+	assertDecode(t, []byte{131, 109, 0, 0, 0, 3, 102, 111, 111}, []uint8{102, 111, 111});
 
 	// Complex
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108}, nil);
