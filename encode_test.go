@@ -42,6 +42,20 @@ func TestEncode(t *testing.T) {
 
 	// String
 	assertEncode(t, "foo", []byte{131, 107, 0, 3, 102, 111, 111});
+
+	// List
+	assertEncode(t, [1]Term{1},
+		[]byte{131, 108, 0, 0, 0, 1, 97, 1, 106});
+	assertEncode(t, [3]Term{1, 2, 3},
+		[]byte{131, 108, 0, 0, 0, 3,
+			97, 1, 97, 2, 97, 3,
+			106,
+		});
+	assertEncode(t, [2]Term{Atom("a"), Atom("b")},
+		[]byte{131, 108, 0, 0, 0, 2,
+			100, 0, 1, 97, 100, 0, 1, 98,
+			106,
+		});
 }
 
 func assertEncode(t *testing.T, actual interface{}, expected []byte) {

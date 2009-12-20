@@ -56,6 +56,18 @@ func writeString(buf *bytes.Buffer, a string) {
 	buf.WriteString(a);
 }
 
+func writeList(buf *bytes.Buffer, l *reflect.ArrayValue) {
+	write1(buf, ListTag);
+	size := l.Len();
+	write4(buf, uint32(size));
+
+	for i := 0; i < size; i++ {
+		writeTag(buf, l.Elem(i))
+	}
+
+	writeNil(buf);
+}
+
 func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
 	switch v := val.(type) {
 	case *reflect.IntValue:
@@ -73,6 +85,8 @@ func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
 		}
 	case *reflect.SliceValue:
 		writeSmallTuple(buf, v)
+	case *reflect.ArrayValue:
+		writeList(buf, v)
 	case *reflect.InterfaceValue:
 		writeTag(buf, v.Elem())
 	default:
