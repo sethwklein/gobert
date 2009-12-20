@@ -3,23 +3,24 @@ package bert
 import (
 	"bytes";
 	"encoding/binary";
+	"fmt";
+	"io";
 	"os";
 	"reflect";
-	"fmt";
 )
 
-func write1(buf *bytes.Buffer, ui4 uint8)	{ buf.WriteByte(ui4) }
+func write1(w io.Writer, ui4 uint8)	{ w.Write([]byte{ui4}) }
 
-func write2(buf *bytes.Buffer, ui16 uint16) {
+func write2(w io.Writer, ui16 uint16) {
 	b := make([]byte, 2);
 	binary.BigEndian.PutUint16(b, ui16);
-	buf.Write(b);
+	w.Write(b);
 }
 
-func write4(buf *bytes.Buffer, ui32 uint32) {
+func write4(w io.Writer, ui32 uint32) {
 	b := make([]byte, 4);
 	binary.BigEndian.PutUint32(b, ui32);
-	buf.Write(b);
+	w.Write(b);
 }
 
 func writeSmallInt(buf *bytes.Buffer, n int) {

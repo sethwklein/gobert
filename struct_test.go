@@ -6,18 +6,6 @@ import (
 	"reflect";
 )
 
-type Request struct {
-	Kind		Atom;
-	Module		Atom;
-	Function	Atom;
-	Arguments	[]Term;
-}
-
-type Response struct {
-	Kind	string;
-	Result	string;
-}
-
 func TestUnmarshal(t *testing.T) {
 	var a struct {
 		First Atom;
@@ -54,10 +42,37 @@ func TestUnmarshal(t *testing.T) {
 	assertEqual(t, []Term{99}, req.Arguments);
 }
 
+func TestUnmarshalRequest(t *testing.T) {
+	req, _ := UnmarshalRequest([]byte{
+		0, 0, 0, 38,
+		131, 104, 4,
+		100, 0, 4, 99, 97, 108, 108,
+		100, 0, 6, 112, 104, 111, 116, 111, 120,
+		100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
+		108, 0, 0, 0, 1, 97, 99,
+		106,
+	});
+	assertEqual(t, Atom("call"), req.Kind);
+	assertEqual(t, Atom("photox"), req.Module);
+	assertEqual(t, Atom("img_size"), req.Function);
+	assertEqual(t, []Term{99}, req.Arguments);
+}
+
 func TestMarshal(t *testing.T) {
 	var buf bytes.Buffer;
 	Marshal(&buf, 42);
 	assertEqual(t, []byte{131, 97, 42}, buf.Bytes());
+}
+
+func TestMarshalResponse(t *testing.T) {
+	var buf bytes.Buffer;
+	MarshalResponse(&buf, []Term{Atom("reply"), 42});
+	assertEqual(t, []byte{0, 0, 0, 13,
+		131, 104, 2,
+		100, 0, 5, 114, 101, 112, 108,
+		121, 97, 42,
+	},
+		buf.Bytes());
 }
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {

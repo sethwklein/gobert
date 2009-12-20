@@ -27,3 +27,15 @@ type Term interface{}
 type Error struct {
 	os.ErrorString;
 }
+
+type Request struct {
+	Kind		Atom;
+	Module		Atom;
+	Function	Atom;
+	Arguments	[]Term;
+}
+
+type Response struct {
+	Kind	string;
+	Result	string;
+}

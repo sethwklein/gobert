@@ -24,10 +24,34 @@ func Unmarshal(data []byte, val interface{}) (err os.Error) {
 	return nil;
 }
 
+func UnmarshalRequest(data []byte) (Request, os.Error) {
+	var req Request;
+
+	buf := bytes.NewBuffer(data);
+
+	size, err := read4(buf);
+	if err != nil {
+		return req, err
+	}
+
+	err = Unmarshal(buf.Bytes()[0:size], &req);
+
+	return req, err;
+}
+
 func Marshal(w io.Writer, val interface{}) os.Error {
 	buf := bytes.NewBuffer([]byte{});
 	write1(buf, VersionTag);
 	err := writeTag(buf, reflect.NewValue(val));
 	buf.WriteTo(w);
 	return err;
+}
+
+func MarshalResponse(w io.Writer, val interface{}) (err os.Error) {
+	resp, err := Encode(val);
+
+	write4(w, uint32(len(resp)));
+	w.Write(resp);
+
+	return;
 }
