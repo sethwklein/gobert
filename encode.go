@@ -10,6 +10,12 @@ import (
 
 func write1(buf *bytes.Buffer, ui4 uint8)	{ buf.WriteByte(ui4) }
 
+func write2(buf *bytes.Buffer, ui16 uint16) {
+	b := make([]byte, 2);
+	binary.BigEndian.PutUint16(b, ui16);
+	buf.Write(b);
+}
+
 func write4(buf *bytes.Buffer, ui32 uint32) {
 	b := make([]byte, 4);
 	binary.BigEndian.PutUint32(b, ui32);
@@ -26,6 +32,12 @@ func writeInt(buf *bytes.Buffer, n int) {
 	write4(buf, uint32(n));
 }
 
+func writeAtom(buf *bytes.Buffer, a string) {
+	write1(buf, AtomTag);
+	write2(buf, uint16(len(a)));
+	buf.WriteString(a);
+}
+
 func writeTag(buf *bytes.Buffer, val interface{}) (err os.Error) {
 	switch v := reflect.NewValue(val).(type) {
 	case *reflect.IntValue:
@@ -34,6 +46,12 @@ func writeTag(buf *bytes.Buffer, val interface{}) (err os.Error) {
 			writeSmallInt(buf, n)
 		} else {
 			writeInt(buf, n)
+		}
+	case *reflect.StringValue:
+		if v.Type().Name() == "Atom" {
+			writeAtom(buf, v.Get())
+		} else {
+			err = ErrUnknownType
 		}
 	default:
 		// TODO: Remove debug line

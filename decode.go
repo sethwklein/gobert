@@ -11,22 +11,6 @@ import (
 	"os";
 )
 
-const (
-	VersionTag	= 131;
-	SmallIntTag	= 97;
-	IntTag		= 98;
-	SmallBignumTag	= 110;
-	LargeBignumTag	= 111;
-	FloatTag	= 99;
-	AtomTag		= 100;
-	SmallTupleTag	= 104;
-	LargeTupleTag	= 105;
-	NilTag		= 106;
-	StringTag	= 107;
-	ListTag		= 108;
-	BinTag		= 109;
-)
-
 var (
 	ComplexBert	= []uint8{100, 0, 4, 98, 101, 114, 116};
 	ComplexNil	= []uint8{100, 0, 3, 110, 105, 108};
@@ -34,16 +18,8 @@ var (
 	ComplexFalse	= []uint8{100, 0, 5, 102, 97, 108, 115, 101};
 )
 
-type Atom string
-
-type Error struct {
-	os.ErrorString;
-}
-
 var ErrBadMagic os.Error = &Error{"bad magic"}
 var ErrUnknownType os.Error = &Error{"unknown type"}
-
-type Term interface{}
 
 func read1(buf *bytes.Buffer) (int, os.Error) {
 	ui4, err := buf.ReadByte();
