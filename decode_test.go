@@ -74,12 +74,48 @@ func TestDecode(t *testing.T) {
 
 	// String
 	assertDecode(t, []byte{131, 107, 0, 3, 102, 111, 111}, "foo");
+	assertDecode(t, []byte{131, 107, 0, 1, 0}, string([]int{0}));
+	assertDecode(t, []byte{131, 107, 0, 1, 1}, string([]int{1}));
 
 	// List
 	assertDecode(t, []byte{131, 106}, []Term{});
-	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 97, 1, 106}, []Term{1});
-	assertDecode(t, []byte{131, 108, 0, 0, 0, 3, 97, 1, 97, 2, 97, 3, 106}, []Term{1, 2, 3});
-	//assertDecode(t, []byte{131, 108, 0, 0, 0, 2, 100, 0, 1, 97, 107, 0, 2, 1, 2, 106}, []Term{"a", []Term{1, 2}});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 97, 1, 106},
+		[]Term{1});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 98, 0, 0, 1, 0, 106},
+		[]Term{256});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 107, 0, 1, 97, 106},
+		[]Term{"a"});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 100, 0, 1, 97, 106},
+		[]Term{Atom("a")});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 3,
+		97, 1, 97, 2, 97, 3,
+		106,
+	},
+		[]Term{1, 2, 3});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2,
+		107, 0, 1, 97, 107, 0, 1, 98, 106,
+	},
+		[]Term{"a", "b"});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 1, 107, 0, 2, 97, 98, 106},
+		[]Term{"ab"});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2,
+		100, 0, 1, 97, 100, 0, 1, 98, 106,
+	},
+		[]Term{Atom("a"), Atom("b")});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2, 100, 0, 1, 97, 97, 1, 106},
+		[]Term{Atom("a"), 1});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2,
+		107, 0, 1, 97, 107, 0, 2, 1, 2, 106,
+	},
+		[]Term{"a", string([]int{1, 2})});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2,
+		100, 0, 1, 97, 107, 0, 2, 1, 2, 106,
+	},
+		[]Term{Atom("a"), string([]int{1, 2})});
+	assertDecode(t, []byte{131, 108, 0, 0, 0, 2, 100, 0, 1, 97, 108, 0, 0, 0, 1, 98, 0, 0, 1, 0, 106,
+		106,
+	},
+		[]Term{Atom("a"), []Term{256}});
 
 	// Binary
 	assertDecode(t, []byte{131, 109, 0, 0, 0, 3, 102, 111, 111},
