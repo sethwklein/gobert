@@ -48,6 +48,12 @@ func writeSmallTuple(buf *bytes.Buffer, t *reflect.SliceValue) {
 	}
 }
 
+func writeString(buf *bytes.Buffer, a string) {
+	write1(buf, StringTag);
+	write2(buf, uint16(len(a)));
+	buf.WriteString(a);
+}
+
 func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
 	switch v := val.(type) {
 	case *reflect.IntValue:
@@ -61,7 +67,7 @@ func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
 		if v.Type().Name() == "Atom" {
 			writeAtom(buf, v.Get())
 		} else {
-			err = ErrUnknownType
+			writeString(buf, v.Get())
 		}
 	case *reflect.SliceValue:
 		writeSmallTuple(buf, v)

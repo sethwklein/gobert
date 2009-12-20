@@ -36,6 +36,9 @@ func TestEncode(t *testing.T) {
 			97, 23,
 			97, 42,
 		});
+
+	// String
+	assertEncode(t, "foo", []byte{131, 107, 0, 3, 102, 111, 111});
 }
 
 func assertEncode(t *testing.T, actual interface{}, expected []byte) {
