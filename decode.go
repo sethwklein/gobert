@@ -1,6 +1,3 @@
-// http://bert-rpc.org/
-// http://golang.org/
-
 package bert
 
 import (
