@@ -1,6 +1,8 @@
 package bert
 
 import (
+	"bytes";
+	"io";
 	"os";
 	"reflect";
 )
@@ -20,4 +22,12 @@ func Unmarshal(data []byte, val interface{}) (err os.Error) {
 	}
 
 	return nil;
+}
+
+func Marshal(w io.Writer, val interface{}) os.Error {
+	buf := bytes.NewBuffer([]byte{});
+	write1(buf, VersionTag);
+	err := writeTag(buf, reflect.NewValue(val));
+	buf.WriteTo(w);
+	return err;
 }

@@ -1,6 +1,7 @@
 package bert
 
 import (
+	"bytes";
 	"testing";
 	"reflect";
 )
@@ -51,6 +52,12 @@ func TestUnmarshal(t *testing.T) {
 	assertEqual(t, Atom("photox"), req.Module);
 	assertEqual(t, Atom("img_size"), req.Function);
 	assertEqual(t, []Term{99}, req.Arguments);
+}
+
+func TestMarshal(t *testing.T) {
+	var buf bytes.Buffer;
+	Marshal(&buf, 42);
+	assertEqual(t, []byte{131, 97, 42}, buf.Bytes());
 }
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {
