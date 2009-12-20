@@ -37,6 +37,9 @@ func TestEncode(t *testing.T) {
 			97, 42,
 		});
 
+	// Nil
+	assertEncode(t, nil, []byte{131, 106});
+
 	// String
 	assertEncode(t, "foo", []byte{131, 107, 0, 3, 102, 111, 111});
 }

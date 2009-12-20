@@ -48,10 +48,7 @@ func writeSmallTuple(buf *bytes.Buffer, t *reflect.SliceValue) {
 	}
 }
 
-func writeNil(buf *bytes.Buffer) {
-	write1(buf, ListTag);
-	write1(buf, NilTag);
-}
+func writeNil(buf *bytes.Buffer)	{ write1(buf, NilTag) }
 
 func writeString(buf *bytes.Buffer, a string) {
 	write1(buf, StringTag);
@@ -79,9 +76,13 @@ func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
 	case *reflect.InterfaceValue:
 		writeTag(buf, v.Elem())
 	default:
-		// TODO: Remove debug line
-		fmt.Printf("Couldn't encode: %#v\n", v);
-		err = ErrUnknownType;
+		if reflect.Indirect(val) == nil {
+			writeNil(buf)
+		} else {
+			// TODO: Remove debug line
+			fmt.Printf("Couldn't encode: %#v\n", v);
+			err = ErrUnknownType;
+		}
 	}
 
 	return;
