@@ -1,0 +1,48 @@
+gobert(3) -- BERT serialization library for Go
+==============================================
+
+## SYNOPSIS
+
+Implements BERT serialization and RPC protocol in Go.
+
+<http://bert-rpc.org/>
+
+## DESCRIPTION
+
+import "bert"
+
+// 42  
+bert.Decode([]byte{131, 97, 42})
+
+// "foo"  
+bert.Decode([]byte{131, 107, 0, 3, 102, 111, 111})
+
+// bert.Atom("foo")  
+bert.Decode([]byte{131, 104, 1, 100, 0, 3, 102, 111, 111})
+
+## LIST OF FUNCTIONS
+
+**Function**		**Description**
+
+Decode			decodes binary sequence and returns an opaque interface 
+Encode			encodes known built-in type into a binary sequence  
+Unmarshal		grafts a binary sequence onto a struct  
+Marshal			encodes known built-in types and writes to io  
+
+UnmarshalRequest	decodes a BURP to a Request struct  
+MarshalResponse		encodes data into BURP Response  
+
+## BUGS
+
+Full BERT specification compliance is still in progress.
+
+<https://github.com/josh/gobert/issues>
+
+## AUTHOR
+
+Joshua Peek :: josh@joshpeek.com :: @joshpeek
+
+## SEE ALSO
+
+<http://github.com/mojombo/bert>  
+<http://github.com/mojombo/bertrpc>
