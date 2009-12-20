@@ -62,13 +62,14 @@ func TestDecode(t *testing.T) {
 		97, 42,
 	},
 		[]Term{Atom("coord"), 23, 42});
-	// assertDecode(t, []byte{131, 104, 4,
-	// 	100, 0, 4, 99, 97, 108, 108,
-	// 	100, 0, 6, 112, 104, 111, 116, 111, 120,
-	// 	100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
-	// 	107, 0, 1, 99,
-	// },
-	// 	[]Term{"call", "photox", "img_size", []Term{99}});
+	assertDecode(t, []byte{131, 104, 4,
+		100, 0, 4, 99, 97, 108, 108,
+		100, 0, 6, 112, 104, 111, 116, 111, 120,
+		100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
+		108, 0, 0, 0, 1, 97, 99,
+		106,
+	},
+		[]Term{Atom("call"), Atom("photox"), Atom("img_size"), []Term{99}});
 
 	// Large Tuple
 
@@ -143,6 +144,6 @@ func assertDecode(t *testing.T, data []byte, expected interface{}) {
 	if err != nil {
 		t.Errorf("Decode(%v) returned error '%v'", data, err)
 	} else if !reflect.DeepEqual(val, expected) {
-		t.Errorf("Decode(%v) = %v, expected %v", data, val, expected)
+		t.Errorf("Decode(%v) = %#v, expected %#v", data, val, expected)
 	}
 }
