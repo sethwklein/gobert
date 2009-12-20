@@ -48,6 +48,11 @@ func writeSmallTuple(buf *bytes.Buffer, t *reflect.SliceValue) {
 	}
 }
 
+func writeNil(buf *bytes.Buffer) {
+	write1(buf, ListTag);
+	write1(buf, NilTag);
+}
+
 func writeString(buf *bytes.Buffer, a string) {
 	write1(buf, StringTag);
 	write2(buf, uint16(len(a)));
