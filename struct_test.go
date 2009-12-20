@@ -9,7 +9,7 @@ type Request struct {
 	Kind		Atom;
 	Module		Atom;
 	Function	Atom;
-	Arguments	[]int;
+	Arguments	[]Term;
 }
 
 type Response struct {
@@ -38,8 +38,19 @@ func TestUnmarshal(t *testing.T) {
 	assertEqual(t, Atom("foo"), c.First);
 	assertEqual(t, Atom("bar"), c.Second);
 
-	// var req Request;
-	// Unmarshal([]byte{131, 104, 4, 100, 0, 4, 99, 97, 108, 108, 100, 0, 6, 112, 104, 111, 116, 111, 120, 100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101, 107, 0, 1, 99}, &req);
+	var req Request;
+	Unmarshal([]byte{131, 104, 4,
+		100, 0, 4, 99, 97, 108, 108,
+		100, 0, 6, 112, 104, 111, 116, 111, 120,
+		100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
+		108, 0, 0, 0, 1, 97, 99,
+		106,
+	},
+		&req);
+	assertEqual(t, Atom("call"), req.Kind);
+	assertEqual(t, Atom("photox"), req.Module);
+	assertEqual(t, Atom("img_size"), req.Function);
+	assertEqual(t, []Term{99}, req.Arguments);
 }
 
 func assertEqual(t *testing.T, expected interface{}, actual interface{}) {

@@ -127,6 +127,15 @@ func TestDecode(t *testing.T) {
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 3, 110, 105, 108}, nil);
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 4, 116, 114, 117, 101}, true);
 	assertDecode(t, []byte{131, 104, 2, 100, 0, 4, 98, 101, 114, 116, 100, 0, 5, 102, 97, 108, 115, 101}, false);
+
+	assertDecode(t, []byte{131, 104, 4,
+		100, 0, 4, 99, 97, 108, 108,
+		100, 0, 6, 112, 104, 111, 116, 111, 120,
+		100, 0, 8, 105, 109, 103, 95, 115, 105, 122, 101,
+		108, 0, 0, 0, 1, 97, 99,
+		106,
+	},
+		[]Term{Atom("call"), Atom("photox"), Atom("img_size"), []Term{99}});
 }
 
 func assertDecode(t *testing.T, data []byte, expected interface{}) {
