@@ -38,8 +38,18 @@ func writeAtom(buf *bytes.Buffer, a string) {
 	buf.WriteString(a);
 }
 
-func writeTag(buf *bytes.Buffer, val interface{}) (err os.Error) {
-	switch v := reflect.NewValue(val).(type) {
+func writeSmallTuple(buf *bytes.Buffer, t *reflect.SliceValue) {
+	write1(buf, SmallTupleTag);
+	size := t.Len();
+	write1(buf, uint8(size));
+
+	for i := 0; i < size; i++ {
+		writeTag(buf, t.Elem(i))
+	}
+}
+
+func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
+	switch v := val.(type) {
 	case *reflect.IntValue:
 		n := v.Get();
 		if n >= 0 && n < 256 {
@@ -53,6 +63,10 @@ func writeTag(buf *bytes.Buffer, val interface{}) (err os.Error) {
 		} else {
 			err = ErrUnknownType
 		}
+	case *reflect.SliceValue:
+		writeSmallTuple(buf, v)
+	case *reflect.InterfaceValue:
+		writeTag(buf, v.Elem())
 	default:
 		// TODO: Remove debug line
 		fmt.Printf("Couldn't encode: %#v\n", v);
@@ -65,6 +79,6 @@ func writeTag(buf *bytes.Buffer, val interface{}) (err os.Error) {
 func Encode(val interface{}) ([]byte, os.Error) {
 	buf := bytes.NewBuffer([]byte{});
 	write1(buf, VersionTag);
-	err := writeTag(buf, val);
+	err := writeTag(buf, reflect.NewValue(val));
 	return buf.Bytes(), err;
 }
