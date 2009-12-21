@@ -52,10 +52,6 @@ func readAtom(r io.Reader) (Atom, os.Error) {
 	return Atom(str), err;
 }
 
-var (
-	ComplexBert = []uint8{100, 0, 4, 98, 101, 114, 116, 100};
-)
-
 func readSmallTuple(r io.Reader) (Term, os.Error) {
 	size, err := read1(r);
 	if err != nil {
