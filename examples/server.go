@@ -15,9 +15,7 @@ func fib(n int) int {
 }
 
 func handle(c net.Conn) {
-	buf := make([]byte, 1024);
-	c.Read(buf);
-	request, _ := bert.UnmarshalRequest(buf);
+	request, _ := bert.UnmarshalRequest(c);
 
 	var response []bert.Term;
 

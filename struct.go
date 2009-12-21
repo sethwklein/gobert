@@ -7,8 +7,8 @@ import (
 	"reflect";
 )
 
-func Unmarshal(data []byte, val interface{}) (err os.Error) {
-	result, _ := Decode(data);
+func UnmarshalFrom(r io.Reader, val interface{}) (err os.Error) {
+	result, _ := DecodeFrom(r);
 
 	value := reflect.NewValue(val).(*reflect.PtrValue).Elem();
 
@@ -24,17 +24,19 @@ func Unmarshal(data []byte, val interface{}) (err os.Error) {
 	return nil;
 }
 
-func UnmarshalRequest(data []byte) (Request, os.Error) {
+func Unmarshal(data []byte, val interface{}) (err os.Error) {
+	return UnmarshalFrom(bytes.NewBuffer(data), val)
+}
+
+func UnmarshalRequest(r io.Reader) (Request, os.Error) {
 	var req Request;
 
-	buf := bytes.NewBuffer(data);
-
-	size, err := read4(buf);
+	size, err := read4(r);
 	if err != nil {
 		return req, err
 	}
 
-	err = Unmarshal(buf.Bytes()[0:size], &req);
+	err = UnmarshalFrom(io.LimitReader(r, int64(size)), &req);
 
 	return req, err;
 }

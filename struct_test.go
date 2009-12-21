@@ -43,7 +43,7 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestUnmarshalRequest(t *testing.T) {
-	req, _ := UnmarshalRequest([]byte{
+	buf := bytes.NewBuffer([]byte{
 		0, 0, 0, 38,
 		131, 104, 4,
 		100, 0, 4, 99, 97, 108, 108,
@@ -52,6 +52,8 @@ func TestUnmarshalRequest(t *testing.T) {
 		108, 0, 0, 0, 1, 97, 99,
 		106,
 	});
+
+	req, _ := UnmarshalRequest(buf);
 	assertEqual(t, Atom("call"), req.Kind);
 	assertEqual(t, Atom("photox"), req.Module);
 	assertEqual(t, Atom("img_size"), req.Function);
