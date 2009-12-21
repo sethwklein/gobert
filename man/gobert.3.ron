@@ -26,8 +26,10 @@ bert.Decode([]byte{131, 104, 1, 100, 0, 3, 102, 111, 111})
 
 Decode			decodes binary sequence and returns an opaque interface 
 Encode			encodes known built-in type into a binary sequence  
+DecodeFrom		decodes binary sequence from Reader  
+EncodeTo		encodes known built-in types and writes to Writer  
 Unmarshal		grafts a binary sequence onto a struct  
-Marshal			encodes known built-in types and writes to io  
+Marshal			alias for EncodeTo  
 
 UnmarshalRequest	decodes a BURP to a Request struct  
 MarshalResponse		encodes data into BURP Response  
