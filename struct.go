@@ -40,9 +40,7 @@ func UnmarshalRequest(data []byte) (Request, os.Error) {
 }
 
 func Marshal(w io.Writer, val interface{}) os.Error {
-	write1(w, VersionTag);
-	err := writeTag(w, reflect.NewValue(val));
-	return err;
+	return EncodeTo(w, val)
 }
 
 func MarshalResponse(w io.Writer, val interface{}) (err os.Error) {

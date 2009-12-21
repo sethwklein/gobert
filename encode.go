@@ -104,9 +104,14 @@ func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 	return;
 }
 
+func EncodeTo(w io.Writer, val interface{}) (err os.Error) {
+	write1(w, VersionTag);
+	err = writeTag(w, reflect.NewValue(val));
+	return;
+}
+
 func Encode(val interface{}) ([]byte, os.Error) {
 	buf := bytes.NewBuffer([]byte{});
-	write1(buf, VersionTag);
-	err := writeTag(buf, reflect.NewValue(val));
+	err := EncodeTo(buf, val);
 	return buf.Bytes(), err;
 }
