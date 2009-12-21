@@ -8,27 +8,21 @@ import (
 	"os";
 )
 
-var (
-	ComplexBert	= []uint8{100, 0, 4, 98, 101, 114, 116};
-	ComplexNil	= []uint8{100, 0, 3, 110, 105, 108};
-	ComplexTrue	= []uint8{100, 0, 4, 116, 114, 117, 101};
-	ComplexFalse	= []uint8{100, 0, 5, 102, 97, 108, 115, 101};
-)
-
 var ErrBadMagic os.Error = &Error{"bad magic"}
 var ErrUnknownType os.Error = &Error{"unknown type"}
 
-func read1(buf *bytes.Buffer) (int, os.Error) {
-	ui4, err := buf.ReadByte();
+func read1(r io.Reader) (int, os.Error) {
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 1));
 	if err != nil {
 		return 0, err
 	}
 
-	return int(ui4), nil;
+	ui8 := uint8(bits[0]);
+	return int(ui8), nil;
 }
 
-func read2(buf *bytes.Buffer) (int, os.Error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(buf, 2));
+func read2(r io.Reader) (int, os.Error) {
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 2));
 	if err != nil {
 		return 0, err
 	}
@@ -37,8 +31,8 @@ func read2(buf *bytes.Buffer) (int, os.Error) {
 	return int(ui16), nil;
 }
 
-func read4(buf *bytes.Buffer) (int, os.Error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(buf, 4));
+func read4(r io.Reader) (int, os.Error) {
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 4));
 	if err != nil {
 		return 0, err
 	}
@@ -47,36 +41,39 @@ func read4(buf *bytes.Buffer) (int, os.Error) {
 	return int(ui32), nil;
 }
 
-func readSmallInt(buf *bytes.Buffer) (int, os.Error) {
-	return read1(buf)
+func readSmallInt(r io.Reader) (int, os.Error) {
+	return read1(r)
 }
 
-func readInt(buf *bytes.Buffer) (int, os.Error) {
-	return read4(buf)
-}
+func readInt(r io.Reader) (int, os.Error)	{ return read4(r) }
 
-func readAtom(buf *bytes.Buffer) (Atom, os.Error) {
-	str, err := readString(buf);
+func readAtom(r io.Reader) (Atom, os.Error) {
+	str, err := readString(r);
 	return Atom(str), err;
 }
 
-func readSmallTuple(buf *bytes.Buffer) (Term, os.Error) {
-	size, err := read1(buf);
+var (
+	ComplexBert = []uint8{100, 0, 4, 98, 101, 114, 116, 100};
+)
+
+func readSmallTuple(r io.Reader) (Term, os.Error) {
+	size, err := read1(r);
 	if err != nil {
 		return nil, err
 	}
 
 	tuple := make([]Term, size);
 
-	if bytes.HasPrefix(buf.Bytes(), ComplexBert) {
-		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexBert))));
-		return readComplex(buf), nil;
-	}
-
 	for i := 0; i < size; i++ {
-		term, err := readTag(buf);
+		term, err := readTag(r);
 		if err != nil {
 			return nil, err
+		}
+		switch a := term.(type) {
+		case Atom:
+			if a == BertAtom {
+				return readComplex(r)
+			}
 		}
 		tuple[i] = term;
 	}
@@ -84,19 +81,22 @@ func readSmallTuple(buf *bytes.Buffer) (Term, os.Error) {
 	return tuple, nil;
 }
 
-func readNil(buf *bytes.Buffer) ([]Term, os.Error) {
-	buf.ReadByte();
+func readNil(r io.Reader) ([]Term, os.Error) {
+	_, err := ioutil.ReadAll(io.LimitReader(r, 1));
+	if err != nil {
+		return nil, err
+	}
 	list := make([]Term, 0);
 	return list, nil;
 }
 
-func readString(buf *bytes.Buffer) (string, os.Error) {
-	size, err := read2(buf);
+func readString(r io.Reader) (string, os.Error) {
+	size, err := read2(r);
 	if err != nil {
 		return "", err
 	}
 
-	str, err := ioutil.ReadAll(io.LimitReader(buf, int64(size)));
+	str, err := ioutil.ReadAll(io.LimitReader(r, int64(size)));
 	if err != nil {
 		return "", err
 	}
@@ -104,8 +104,8 @@ func readString(buf *bytes.Buffer) (string, os.Error) {
 	return string(str), nil;
 }
 
-func readList(buf *bytes.Buffer) ([]Term, os.Error) {
-	size, err := read4(buf);
+func readList(r io.Reader) ([]Term, os.Error) {
+	size, err := read4(r);
 	if err != nil {
 		return nil, err
 	}
@@ -113,25 +113,25 @@ func readList(buf *bytes.Buffer) ([]Term, os.Error) {
 	list := make([]Term, size);
 
 	for i := 0; i < size; i++ {
-		term, err := readTag(buf);
+		term, err := readTag(r);
 		if err != nil {
 			return nil, err
 		}
 		list[i] = term;
 	}
 
-	buf.ReadByte();
+	read1(r);
 
 	return list, nil;
 }
 
-func readBin(buf *bytes.Buffer) ([]uint8, os.Error) {
-	size, err := read4(buf);
+func readBin(r io.Reader) ([]uint8, os.Error) {
+	size, err := read4(r);
 	if err != nil {
 		return []uint8{}, err
 	}
 
-	bytes, err := ioutil.ReadAll(io.LimitReader(buf, int64(size)));
+	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(size)));
 	if err != nil {
 		return []uint8{}, err
 	}
@@ -139,36 +139,39 @@ func readBin(buf *bytes.Buffer) ([]uint8, os.Error) {
 	return bytes, nil;
 }
 
-func readComplex(buf *bytes.Buffer) Term {
-	if bytes.HasPrefix(buf.Bytes(), ComplexNil) {
-		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexNil))));
-		return nil;
+func readComplex(r io.Reader) (Term, os.Error) {
+	term, err := readTag(r);
+
+	if err != nil {
+		return term, err
 	}
 
-	if bytes.HasPrefix(buf.Bytes(), ComplexTrue) {
-		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexTrue))));
-		return true;
+	switch kind := term.(type) {
+	case Atom:
+		switch kind {
+		case NilAtom:
+			return nil, nil
+		case TrueAtom:
+			return true, nil
+		case FalseAtom:
+			return false, nil
+		}
 	}
 
-	if bytes.HasPrefix(buf.Bytes(), ComplexFalse) {
-		ioutil.ReadAll(io.LimitReader(buf, int64(len(ComplexFalse))));
-		return false;
-	}
-
-	return nil;
+	return term, nil;
 }
 
-func readTag(buf *bytes.Buffer) (Term, os.Error) {
-	tag, err := buf.ReadByte();
+func readTag(r io.Reader) (Term, os.Error) {
+	tag, err := read1(r);
 	if err != nil {
 		return nil, err
 	}
 
 	switch tag {
 	case SmallIntTag:
-		return readSmallInt(buf)
+		return readSmallInt(r)
 	case IntTag:
-		return readInt(buf)
+		return readInt(r)
 	case SmallBignumTag:
 		return nil, ErrUnknownType
 	case LargeBignumTag:
@@ -176,28 +179,26 @@ func readTag(buf *bytes.Buffer) (Term, os.Error) {
 	case FloatTag:
 		return nil, ErrUnknownType
 	case AtomTag:
-		return readAtom(buf)
+		return readAtom(r)
 	case SmallTupleTag:
-		return readSmallTuple(buf)
+		return readSmallTuple(r)
 	case LargeTupleTag:
 		return nil, ErrUnknownType
 	case NilTag:
-		return readNil(buf)
+		return readNil(r)
 	case StringTag:
-		return readString(buf)
+		return readString(r)
 	case ListTag:
-		return readList(buf)
+		return readList(r)
 	case BinTag:
-		return readBin(buf)
+		return readBin(r)
 	}
 
 	return nil, ErrUnknownType;
 }
 
-func Decode(data []byte) (Term, os.Error) {
-	buf := bytes.NewBuffer(data);
-
-	version, err := buf.ReadByte();
+func DecodeFrom(r io.Reader) (Term, os.Error) {
+	version, err := read1(r);
 
 	if err != nil {
 		return nil, err
@@ -208,5 +209,7 @@ func Decode(data []byte) (Term, os.Error) {
 		return nil, ErrBadMagic
 	}
 
-	return readTag(buf);
+	return readTag(r);
 }
+
+func Decode(data []byte) (Term, os.Error)	{ return DecodeFrom(bytes.NewBuffer(data)) }

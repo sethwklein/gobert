@@ -22,6 +22,13 @@ const (
 
 type Atom string
 
+const (
+	BertAtom	= Atom("bert");
+	NilAtom		= Atom("nil");
+	TrueAtom	= Atom("true");
+	FalseAtom	= Atom("false");
+)
+
 type Term interface{}
 
 type Error struct {
