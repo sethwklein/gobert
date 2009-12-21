@@ -41,8 +41,3 @@ type Request struct {
 	Function	Atom;
 	Arguments	[]Term;
 }
-
-type Response struct {
-	Kind	string;
-	Result	string;
-}
