@@ -7,6 +7,7 @@ import (
 	"io";
 	"os";
 	"reflect";
+	"strings";
 )
 
 func write1(w io.Writer, ui4 uint8)	{ w.Write([]byte{ui4}) }
@@ -23,76 +24,76 @@ func write4(w io.Writer, ui32 uint32) {
 	w.Write(b);
 }
 
-func writeSmallInt(buf *bytes.Buffer, n int) {
-	write1(buf, SmallIntTag);
-	write1(buf, uint8(n));
+func writeSmallInt(w io.Writer, n int) {
+	write1(w, SmallIntTag);
+	write1(w, uint8(n));
 }
 
-func writeInt(buf *bytes.Buffer, n int) {
-	write1(buf, IntTag);
-	write4(buf, uint32(n));
+func writeInt(w io.Writer, n int) {
+	write1(w, IntTag);
+	write4(w, uint32(n));
 }
 
-func writeAtom(buf *bytes.Buffer, a string) {
-	write1(buf, AtomTag);
-	write2(buf, uint16(len(a)));
-	buf.WriteString(a);
+func writeAtom(w io.Writer, a string) {
+	write1(w, AtomTag);
+	write2(w, uint16(len(a)));
+	w.Write(strings.Bytes(a));
 }
 
-func writeSmallTuple(buf *bytes.Buffer, t *reflect.SliceValue) {
-	write1(buf, SmallTupleTag);
+func writeSmallTuple(w io.Writer, t *reflect.SliceValue) {
+	write1(w, SmallTupleTag);
 	size := t.Len();
-	write1(buf, uint8(size));
+	write1(w, uint8(size));
 
 	for i := 0; i < size; i++ {
-		writeTag(buf, t.Elem(i))
+		writeTag(w, t.Elem(i))
 	}
 }
 
-func writeNil(buf *bytes.Buffer)	{ write1(buf, NilTag) }
+func writeNil(w io.Writer)	{ write1(w, NilTag) }
 
-func writeString(buf *bytes.Buffer, a string) {
-	write1(buf, StringTag);
-	write2(buf, uint16(len(a)));
-	buf.WriteString(a);
+func writeString(w io.Writer, s string) {
+	write1(w, StringTag);
+	write2(w, uint16(len(s)));
+	w.Write(strings.Bytes(s));
 }
 
-func writeList(buf *bytes.Buffer, l *reflect.ArrayValue) {
-	write1(buf, ListTag);
+func writeList(w io.Writer, l *reflect.ArrayValue) {
+	write1(w, ListTag);
 	size := l.Len();
-	write4(buf, uint32(size));
+	write4(w, uint32(size));
 
 	for i := 0; i < size; i++ {
-		writeTag(buf, l.Elem(i))
+		writeTag(w, l.Elem(i))
 	}
 
-	writeNil(buf);
+	writeNil(w);
 }
 
-func writeTag(buf *bytes.Buffer, val reflect.Value) (err os.Error) {
+func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 	switch v := val.(type) {
 	case *reflect.IntValue:
 		n := v.Get();
 		if n >= 0 && n < 256 {
-			writeSmallInt(buf, n)
+			writeSmallInt(w, n)
 		} else {
-			writeInt(buf, n)
+			writeInt(w, n)
 		}
 	case *reflect.StringValue:
 		if v.Type().Name() == "Atom" {
-			writeAtom(buf, v.Get())
+			writeAtom(w, v.Get())
 		} else {
-			writeString(buf, v.Get())
+			writeString(w, v.Get())
 		}
 	case *reflect.SliceValue:
-		writeSmallTuple(buf, v)
+		writeSmallTuple(w, v)
 	case *reflect.ArrayValue:
-		writeList(buf, v)
+		writeList(w, v)
 	case *reflect.InterfaceValue:
-		writeTag(buf, v.Elem())
+		writeTag(w, v.Elem())
 	default:
 		if reflect.Indirect(val) == nil {
-			writeNil(buf)
+			writeNil(w)
 		} else {
 			// TODO: Remove debug line
 			fmt.Printf("Couldn't encode: %#v\n", v);

@@ -40,10 +40,8 @@ func UnmarshalRequest(data []byte) (Request, os.Error) {
 }
 
 func Marshal(w io.Writer, val interface{}) os.Error {
-	buf := bytes.NewBuffer([]byte{});
-	write1(buf, VersionTag);
-	err := writeTag(buf, reflect.NewValue(val));
-	buf.WriteTo(w);
+	write1(w, VersionTag);
+	err := writeTag(w, reflect.NewValue(val));
 	return err;
 }
 
