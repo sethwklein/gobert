@@ -3,7 +3,6 @@ package bert
 import (
 	"bytes";
 	"encoding/binary";
-	"fmt";
 	"io";
 	"os";
 	"reflect";
@@ -95,8 +94,6 @@ func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 		if reflect.Indirect(val) == nil {
 			writeNil(w)
 		} else {
-			// TODO: Remove debug line
-			fmt.Printf("Couldn't encode: %#v\n", v);
 			err = ErrUnknownType;
 		}
 	}
