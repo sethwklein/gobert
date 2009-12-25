@@ -1,6 +1,7 @@
 package bert
 
 import (
+	"bytes";
 	"testing";
 	"reflect";
 )
@@ -70,6 +71,23 @@ func TestEncode(t *testing.T) {
 			100, 0, 1, 97, 100, 0, 1, 98,
 			106,
 		});
+}
+
+func TestMarshal(t *testing.T) {
+	var buf bytes.Buffer;
+	Marshal(&buf, 42);
+	assertEqual(t, []byte{131, 97, 42}, buf.Bytes());
+}
+
+func TestMarshalResponse(t *testing.T) {
+	var buf bytes.Buffer;
+	MarshalResponse(&buf, []Term{Atom("reply"), 42});
+	assertEqual(t, []byte{0, 0, 0, 13,
+		131, 104, 2,
+		100, 0, 5, 114, 101, 112, 108,
+		121, 97, 42,
+	},
+		buf.Bytes());
 }
 
 func assertEncode(t *testing.T, actual interface{}, expected []byte) {

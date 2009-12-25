@@ -6,6 +6,7 @@ import (
 	"io";
 	"io/ioutil";
 	"os";
+	"reflect";
 	"strconv";
 )
 
@@ -227,3 +228,37 @@ func DecodeFrom(r io.Reader) (Term, os.Error) {
 }
 
 func Decode(data []byte) (Term, os.Error)	{ return DecodeFrom(bytes.NewBuffer(data)) }
+
+func UnmarshalFrom(r io.Reader, val interface{}) (err os.Error) {
+	result, _ := DecodeFrom(r);
+
+	value := reflect.NewValue(val).(*reflect.PtrValue).Elem();
+
+	switch v := value.(type) {
+	case *reflect.StructValue:
+		slice := reflect.NewValue(result).(*reflect.SliceValue);
+		for i := 0; i < slice.Len(); i++ {
+			e := slice.Elem(i).(*reflect.InterfaceValue).Elem();
+			v.Field(i).SetValue(e);
+		}
+	}
+
+	return nil;
+}
+
+func Unmarshal(data []byte, val interface{}) (err os.Error) {
+	return UnmarshalFrom(bytes.NewBuffer(data), val)
+}
+
+func UnmarshalRequest(r io.Reader) (Request, os.Error) {
+	var req Request;
+
+	size, err := read4(r);
+	if err != nil {
+		return req, err
+	}
+
+	err = UnmarshalFrom(io.LimitReader(r, int64(size)), &req);
+
+	return req, err;
+}

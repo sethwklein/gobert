@@ -125,3 +125,16 @@ func Encode(val interface{}) ([]byte, os.Error) {
 	err := EncodeTo(buf, val);
 	return buf.Bytes(), err;
 }
+
+func Marshal(w io.Writer, val interface{}) os.Error {
+	return EncodeTo(w, val)
+}
+
+func MarshalResponse(w io.Writer, val interface{}) (err os.Error) {
+	resp, err := Encode(val);
+
+	write4(w, uint32(len(resp)));
+	w.Write(resp);
+
+	return;
+}
