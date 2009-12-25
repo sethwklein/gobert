@@ -9,7 +9,7 @@ import (
 	"strings";
 )
 
-func write1(w io.Writer, ui4 uint8)	{ w.Write([]byte{ui4}) }
+func write1(w io.Writer, ui8 uint8)	{ w.Write([]byte{ui8}) }
 
 func write2(w io.Writer, ui16 uint16) {
 	b := make([]byte, 2);
