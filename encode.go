@@ -3,6 +3,7 @@ package bert
 import (
 	"bytes";
 	"encoding/binary";
+	"fmt";
 	"io";
 	"os";
 	"reflect";
@@ -31,6 +32,16 @@ func writeSmallInt(w io.Writer, n int) {
 func writeInt(w io.Writer, n int) {
 	write1(w, IntTag);
 	write4(w, uint32(n));
+}
+
+func writeFloat(w io.Writer, f float) {
+	write1(w, FloatTag);
+
+	s := fmt.Sprintf("%.20e", float32(f));
+	w.Write(strings.Bytes(s));
+
+	pad := make([]byte, 31-len(s));
+	w.Write(pad);
 }
 
 func writeAtom(w io.Writer, a string) {
@@ -78,6 +89,8 @@ func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 		} else {
 			writeInt(w, n)
 		}
+	case *reflect.FloatValue:
+		writeFloat(w, v.Get())
 	case *reflect.StringValue:
 		if v.Type().Name() == "Atom" {
 			writeAtom(w, v.Get())
@@ -94,7 +107,7 @@ func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 		if reflect.Indirect(val) == nil {
 			writeNil(w)
 		} else {
-			err = ErrUnknownType;
+			err = ErrUnknownType
 		}
 	}
 

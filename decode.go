@@ -6,6 +6,7 @@ import (
 	"io";
 	"io/ioutil";
 	"os";
+	"strconv";
 )
 
 var ErrBadMagic os.Error = &Error{"bad magic"}
@@ -46,6 +47,23 @@ func readSmallInt(r io.Reader) (int, os.Error) {
 }
 
 func readInt(r io.Reader) (int, os.Error)	{ return read4(r) }
+
+func readFloat(r io.Reader) (float, os.Error) {
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 31));
+	if err != nil {
+		return 0, err
+	}
+
+	// Atof doesn't like trailing 0s
+	var i int;
+	for i = 0; i < len(bits); i++ {
+		if bits[i] == 0 {
+			break
+		}
+	}
+
+	return strconv.Atof(string(bits[0:i]));
+}
 
 func readAtom(r io.Reader) (Atom, os.Error) {
 	str, err := readString(r);
@@ -173,7 +191,7 @@ func readTag(r io.Reader) (Term, os.Error) {
 	case LargeBignumTag:
 		return nil, ErrUnknownType
 	case FloatTag:
-		return nil, ErrUnknownType
+		return readFloat(r)
 	case AtomTag:
 		return readAtom(r)
 	case SmallTupleTag:
