@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"github.com/josh/gobert"
 	"net"
 )
@@ -30,13 +31,17 @@ func handle(c net.Conn) {
 
 	bert.MarshalResponse(c, response)
 	c.Close()
+	log.Println("Request handled.")
 }
 
 func main() {
-	l, _ := net.Listen("tcp", ":8000")
+	address := ":8000"
+	l, _ := net.Listen("tcp", address)
+	log.Printf("Listening for connections at %v...\n", address)
 
 	for {
 		c, _ := l.Accept()
+		log.Println("Dispatching handler...")
 		go handle(c)
 	}
 
