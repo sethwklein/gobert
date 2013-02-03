@@ -1,18 +1,11 @@
-include $(GOROOT)/src/Make.$(GOARCH)
+build:
+	go build
 
-TARG=bert
-GOFILES=\
-	decode.go\
-	encode.go\
-	type.go
-GOTESTFILES=\
-	decode_test.go\
-	encode_test.go
-
-include $(GOROOT)/src/Make.pkg
+install:
+	go install
 
 format:
-	echo $(GOFILES) $(GOTESTFILES) | xargs gofmt -w
+	go fmt
 
 man: man/gobert.3
 
