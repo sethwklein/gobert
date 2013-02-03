@@ -3,6 +3,7 @@ package bert
 import (
 	"bytes";
 	"encoding/binary";
+	"errors";
 	"io";
 	"io/ioutil";
 	"os";
@@ -10,10 +11,10 @@ import (
 	"strconv";
 )
 
-var ErrBadMagic os.Error = &Error{"bad magic"}
-var ErrUnknownType os.Error = &Error{"unknown type"}
+var ErrBadMagic error = errors.New("bad magic")
+var ErrUnknownType error = errors.New("unknown type")
 
-func read1(r io.Reader) (int, os.Error) {
+func read1(r io.Reader) (int, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 1));
 	if err != nil {
 		return 0, err
@@ -23,7 +24,7 @@ func read1(r io.Reader) (int, os.Error) {
 	return int(ui8), nil;
 }
 
-func read2(r io.Reader) (int, os.Error) {
+func read2(r io.Reader) (int, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 2));
 	if err != nil {
 		return 0, err
@@ -33,7 +34,7 @@ func read2(r io.Reader) (int, os.Error) {
 	return int(ui16), nil;
 }
 
-func read4(r io.Reader) (int, os.Error) {
+func read4(r io.Reader) (int, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 4));
 	if err != nil {
 		return 0, err
@@ -43,13 +44,13 @@ func read4(r io.Reader) (int, os.Error) {
 	return int(ui32), nil;
 }
 
-func readSmallInt(r io.Reader) (int, os.Error) {
+func readSmallInt(r io.Reader) (int, error) {
 	return read1(r)
 }
 
-func readInt(r io.Reader) (int, os.Error)	{ return read4(r) }
+func readInt(r io.Reader) (int, error) { return read4(r) }
 
-func readFloat(r io.Reader) (float, os.Error) {
+func readFloat(r io.Reader) (float, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 31));
 	if err != nil {
 		return 0, err
@@ -66,12 +67,12 @@ func readFloat(r io.Reader) (float, os.Error) {
 	return strconv.Atof(string(bits[0:i]));
 }
 
-func readAtom(r io.Reader) (Atom, os.Error) {
+func readAtom(r io.Reader) (Atom, error) {
 	str, err := readString(r);
 	return Atom(str), err;
 }
 
-func readSmallTuple(r io.Reader) (Term, os.Error) {
+func readSmallTuple(r io.Reader) (Term, error) {
 	size, err := read1(r);
 	if err != nil {
 		return nil, err
@@ -96,7 +97,7 @@ func readSmallTuple(r io.Reader) (Term, os.Error) {
 	return tuple, nil;
 }
 
-func readNil(r io.Reader) ([]Term, os.Error) {
+func readNil(r io.Reader) ([]Term, error) {
 	_, err := ioutil.ReadAll(io.LimitReader(r, 1));
 	if err != nil {
 		return nil, err
@@ -105,7 +106,7 @@ func readNil(r io.Reader) ([]Term, os.Error) {
 	return list, nil;
 }
 
-func readString(r io.Reader) (string, os.Error) {
+func readString(r io.Reader) (string, error) {
 	size, err := read2(r);
 	if err != nil {
 		return "", err
@@ -119,7 +120,7 @@ func readString(r io.Reader) (string, os.Error) {
 	return string(str), nil;
 }
 
-func readList(r io.Reader) ([]Term, os.Error) {
+func readList(r io.Reader) ([]Term, error) {
 	size, err := read4(r);
 	if err != nil {
 		return nil, err
@@ -140,7 +141,7 @@ func readList(r io.Reader) ([]Term, os.Error) {
 	return list, nil;
 }
 
-func readBin(r io.Reader) ([]uint8, os.Error) {
+func readBin(r io.Reader) ([]uint8, error) {
 	size, err := read4(r);
 	if err != nil {
 		return []uint8{}, err
@@ -154,7 +155,7 @@ func readBin(r io.Reader) ([]uint8, os.Error) {
 	return bytes, nil;
 }
 
-func readComplex(r io.Reader) (Term, os.Error) {
+func readComplex(r io.Reader) (Term, error) {
 	term, err := readTag(r);
 
 	if err != nil {
@@ -176,7 +177,7 @@ func readComplex(r io.Reader) (Term, os.Error) {
 	return term, nil;
 }
 
-func readTag(r io.Reader) (Term, os.Error) {
+func readTag(r io.Reader) (Term, error) {
 	tag, err := read1(r);
 	if err != nil {
 		return nil, err
@@ -212,7 +213,7 @@ func readTag(r io.Reader) (Term, os.Error) {
 	return nil, ErrUnknownType;
 }
 
-func DecodeFrom(r io.Reader) (Term, os.Error) {
+func DecodeFrom(r io.Reader) (Term, error) {
 	version, err := read1(r);
 
 	if err != nil {
@@ -227,9 +228,9 @@ func DecodeFrom(r io.Reader) (Term, os.Error) {
 	return readTag(r);
 }
 
-func Decode(data []byte) (Term, os.Error)	{ return DecodeFrom(bytes.NewBuffer(data)) }
+func Decode(data []byte) (Term, error) { return DecodeFrom(bytes.NewBuffer(data)) }
 
-func UnmarshalFrom(r io.Reader, val interface{}) (err os.Error) {
+func UnmarshalFrom(r io.Reader, val interface{}) (err error) {
 	result, _ := DecodeFrom(r);
 
 	value := reflect.NewValue(val).(*reflect.PtrValue).Elem();
@@ -246,11 +247,11 @@ func UnmarshalFrom(r io.Reader, val interface{}) (err os.Error) {
 	return nil;
 }
 
-func Unmarshal(data []byte, val interface{}) (err os.Error) {
+func Unmarshal(data []byte, val interface{}) (err error) {
 	return UnmarshalFrom(bytes.NewBuffer(data), val)
 }
 
-func UnmarshalRequest(r io.Reader) (Request, os.Error) {
+func UnmarshalRequest(r io.Reader) (Request, error) {
 	var req Request;
 
 	size, err := read4(r);

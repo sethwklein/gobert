@@ -80,7 +80,7 @@ func writeList(w io.Writer, l *reflect.ArrayValue) {
 	writeNil(w);
 }
 
-func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
+func writeTag(w io.Writer, val reflect.Value) (err error) {
 	switch v := val.(type) {
 	case *reflect.IntValue:
 		n := v.Get();
@@ -114,23 +114,23 @@ func writeTag(w io.Writer, val reflect.Value) (err os.Error) {
 	return;
 }
 
-func EncodeTo(w io.Writer, val interface{}) (err os.Error) {
+func EncodeTo(w io.Writer, val interface{}) (err error) {
 	write1(w, VersionTag);
 	err = writeTag(w, reflect.NewValue(val));
 	return;
 }
 
-func Encode(val interface{}) ([]byte, os.Error) {
+func Encode(val interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{});
 	err := EncodeTo(buf, val);
 	return buf.Bytes(), err;
 }
 
-func Marshal(w io.Writer, val interface{}) os.Error {
+func Marshal(w io.Writer, val interface{}) error {
 	return EncodeTo(w, val)
 }
 
-func MarshalResponse(w io.Writer, val interface{}) (err os.Error) {
+func MarshalResponse(w io.Writer, val interface{}) (err error) {
 	resp, err := Encode(val);
 
 	write4(w, uint32(len(resp)));

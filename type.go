@@ -1,9 +1,5 @@
 package bert
 
-import (
-	"os";
-)
-
 const (
 	VersionTag	= 131;
 	SmallIntTag	= 97;
@@ -30,10 +26,6 @@ const (
 )
 
 type Term interface{}
-
-type Error struct {
-	os.ErrorString;
-}
 
 type Request struct {
 	Kind		Atom;
