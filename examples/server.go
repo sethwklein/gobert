@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bert";
+	"github.com/josh/gobert";
 	"net";
 )
 
