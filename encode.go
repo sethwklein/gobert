@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 )
 
 func write1(w io.Writer, ui8 uint8) { w.Write([]byte{ui8}) }
@@ -23,21 +22,21 @@ func write4(w io.Writer, ui32 uint32) {
 	w.Write(b)
 }
 
-func writeSmallInt(w io.Writer, n int) {
+func writeSmallInt(w io.Writer, n uint8) {
 	write1(w, SmallIntTag)
-	write1(w, uint8(n))
+	write1(w, n)
 }
 
-func writeInt(w io.Writer, n int) {
+func writeInt(w io.Writer, n uint32) {
 	write1(w, IntTag)
-	write4(w, uint32(n))
+	write4(w, n)
 }
 
-func writeFloat(w io.Writer, f float) {
+func writeFloat(w io.Writer, f float32) {
 	write1(w, FloatTag)
 
 	s := fmt.Sprintf("%.20e", float32(f))
-	w.Write(strings.Bytes(s))
+	w.Write([]byte(s))
 
 	pad := make([]byte, 31-len(s))
 	w.Write(pad)
@@ -46,7 +45,7 @@ func writeFloat(w io.Writer, f float) {
 func writeAtom(w io.Writer, a string) {
 	write1(w, AtomTag)
 	write2(w, uint16(len(a)))
-	w.Write(strings.Bytes(a))
+	w.Write([]byte(a))
 }
 
 func writeSmallTuple(w io.Writer, t reflect.Value) {
@@ -64,7 +63,7 @@ func writeNil(w io.Writer) { write1(w, NilTag) }
 func writeString(w io.Writer, s string) {
 	write1(w, StringTag)
 	write2(w, uint16(len(s)))
-	w.Write(strings.Bytes(s))
+	w.Write([]byte(s))
 }
 
 func writeList(w io.Writer, l reflect.Value) {
@@ -84,12 +83,12 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		n := v.Int()
 		if n >= 0 && n < 256 {
-			writeSmallInt(w, n)
+			writeSmallInt(w, uint8(n))
 		} else {
-			writeInt(w, n)
+			writeInt(w, uint32(n))
 		}
 	case reflect.Float32, reflect.Float64:
-		writeFloat(w, v.Float())
+		writeFloat(w, float32(v.Float()))
 	case reflect.String:
 		if v.Type().Name() == "Atom" {
 			writeAtom(w, v.String())

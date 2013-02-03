@@ -49,13 +49,13 @@ func readSmallInt(r io.Reader) (int, error) {
 
 func readInt(r io.Reader) (int, error) { return read4(r) }
 
-func readFloat(r io.Reader) (float, error) {
+func readFloat(r io.Reader) (float32, error) {
 	bits, err := ioutil.ReadAll(io.LimitReader(r, 31))
 	if err != nil {
 		return 0, err
 	}
 
-	// Atof doesn't like trailing 0s
+	// ParseFloat doesn't like trailing 0s
 	var i int
 	for i = 0; i < len(bits); i++ {
 		if bits[i] == 0 {
@@ -63,7 +63,11 @@ func readFloat(r io.Reader) (float, error) {
 		}
 	}
 
-	return strconv.Atof(string(bits[0:i]))
+	f, err := strconv.ParseFloat(string(bits[0:i]), 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(f), nil
 }
 
 func readAtom(r io.Reader) (Atom, error) {
