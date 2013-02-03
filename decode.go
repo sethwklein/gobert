@@ -1,47 +1,46 @@
 package bert
 
 import (
-	"bytes";
-	"encoding/binary";
-	"errors";
-	"io";
-	"io/ioutil";
-	"os";
-	"reflect";
-	"strconv";
+	"bytes"
+	"encoding/binary"
+	"errors"
+	"io"
+	"io/ioutil"
+	"reflect"
+	"strconv"
 )
 
 var ErrBadMagic error = errors.New("bad magic")
 var ErrUnknownType error = errors.New("unknown type")
 
 func read1(r io.Reader) (int, error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(r, 1));
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 1))
 	if err != nil {
 		return 0, err
 	}
 
-	ui8 := uint8(bits[0]);
-	return int(ui8), nil;
+	ui8 := uint8(bits[0])
+	return int(ui8), nil
 }
 
 func read2(r io.Reader) (int, error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(r, 2));
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 2))
 	if err != nil {
 		return 0, err
 	}
 
-	ui16 := binary.BigEndian.Uint16(bits);
-	return int(ui16), nil;
+	ui16 := binary.BigEndian.Uint16(bits)
+	return int(ui16), nil
 }
 
 func read4(r io.Reader) (int, error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(r, 4));
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 4))
 	if err != nil {
 		return 0, err
 	}
 
-	ui32 := binary.BigEndian.Uint32(bits);
-	return int(ui32), nil;
+	ui32 := binary.BigEndian.Uint32(bits)
+	return int(ui32), nil
 }
 
 func readSmallInt(r io.Reader) (int, error) {
@@ -51,37 +50,37 @@ func readSmallInt(r io.Reader) (int, error) {
 func readInt(r io.Reader) (int, error) { return read4(r) }
 
 func readFloat(r io.Reader) (float, error) {
-	bits, err := ioutil.ReadAll(io.LimitReader(r, 31));
+	bits, err := ioutil.ReadAll(io.LimitReader(r, 31))
 	if err != nil {
 		return 0, err
 	}
 
 	// Atof doesn't like trailing 0s
-	var i int;
+	var i int
 	for i = 0; i < len(bits); i++ {
 		if bits[i] == 0 {
 			break
 		}
 	}
 
-	return strconv.Atof(string(bits[0:i]));
+	return strconv.Atof(string(bits[0:i]))
 }
 
 func readAtom(r io.Reader) (Atom, error) {
-	str, err := readString(r);
-	return Atom(str), err;
+	str, err := readString(r)
+	return Atom(str), err
 }
 
 func readSmallTuple(r io.Reader) (Term, error) {
-	size, err := read1(r);
+	size, err := read1(r)
 	if err != nil {
 		return nil, err
 	}
 
-	tuple := make([]Term, size);
+	tuple := make([]Term, size)
 
 	for i := 0; i < size; i++ {
-		term, err := readTag(r);
+		term, err := readTag(r)
 		if err != nil {
 			return nil, err
 		}
@@ -91,72 +90,72 @@ func readSmallTuple(r io.Reader) (Term, error) {
 				return readComplex(r)
 			}
 		}
-		tuple[i] = term;
+		tuple[i] = term
 	}
 
-	return tuple, nil;
+	return tuple, nil
 }
 
 func readNil(r io.Reader) ([]Term, error) {
-	_, err := ioutil.ReadAll(io.LimitReader(r, 1));
+	_, err := ioutil.ReadAll(io.LimitReader(r, 1))
 	if err != nil {
 		return nil, err
 	}
-	list := make([]Term, 0);
-	return list, nil;
+	list := make([]Term, 0)
+	return list, nil
 }
 
 func readString(r io.Reader) (string, error) {
-	size, err := read2(r);
+	size, err := read2(r)
 	if err != nil {
 		return "", err
 	}
 
-	str, err := ioutil.ReadAll(io.LimitReader(r, int64(size)));
+	str, err := ioutil.ReadAll(io.LimitReader(r, int64(size)))
 	if err != nil {
 		return "", err
 	}
 
-	return string(str), nil;
+	return string(str), nil
 }
 
 func readList(r io.Reader) ([]Term, error) {
-	size, err := read4(r);
+	size, err := read4(r)
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]Term, size);
+	list := make([]Term, size)
 
 	for i := 0; i < size; i++ {
-		term, err := readTag(r);
+		term, err := readTag(r)
 		if err != nil {
 			return nil, err
 		}
-		list[i] = term;
+		list[i] = term
 	}
 
-	read1(r);
+	read1(r)
 
-	return list, nil;
+	return list, nil
 }
 
 func readBin(r io.Reader) ([]uint8, error) {
-	size, err := read4(r);
+	size, err := read4(r)
 	if err != nil {
 		return []uint8{}, err
 	}
 
-	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(size)));
+	bytes, err := ioutil.ReadAll(io.LimitReader(r, int64(size)))
 	if err != nil {
 		return []uint8{}, err
 	}
 
-	return bytes, nil;
+	return bytes, nil
 }
 
 func readComplex(r io.Reader) (Term, error) {
-	term, err := readTag(r);
+	term, err := readTag(r)
 
 	if err != nil {
 		return term, err
@@ -174,11 +173,11 @@ func readComplex(r io.Reader) (Term, error) {
 		}
 	}
 
-	return term, nil;
+	return term, nil
 }
 
 func readTag(r io.Reader) (Term, error) {
-	tag, err := read1(r);
+	tag, err := read1(r)
 	if err != nil {
 		return nil, err
 	}
@@ -210,11 +209,11 @@ func readTag(r io.Reader) (Term, error) {
 		return readBin(r)
 	}
 
-	return nil, ErrUnknownType;
+	return nil, ErrUnknownType
 }
 
 func DecodeFrom(r io.Reader) (Term, error) {
-	version, err := read1(r);
+	version, err := read1(r)
 
 	if err != nil {
 		return nil, err
@@ -225,26 +224,26 @@ func DecodeFrom(r io.Reader) (Term, error) {
 		return nil, ErrBadMagic
 	}
 
-	return readTag(r);
+	return readTag(r)
 }
 
 func Decode(data []byte) (Term, error) { return DecodeFrom(bytes.NewBuffer(data)) }
 
 func UnmarshalFrom(r io.Reader, val interface{}) (err error) {
-	result, _ := DecodeFrom(r);
+	result, _ := DecodeFrom(r)
 
-	value := reflect.NewValue(val).(*reflect.PtrValue).Elem();
+	value := reflect.ValueOf(val).Elem()
 
-	switch v := value.(type) {
-	case *reflect.StructValue:
-		slice := reflect.NewValue(result).(*reflect.SliceValue);
+	switch v := value; v.Kind() {
+	case reflect.Struct:
+		slice := reflect.ValueOf(result)
 		for i := 0; i < slice.Len(); i++ {
-			e := slice.Elem(i).(*reflect.InterfaceValue).Elem();
-			v.Field(i).SetValue(e);
+			e := slice.Index(i).Elem()
+			v.Field(i).Set(e)
 		}
 	}
 
-	return nil;
+	return nil
 }
 
 func Unmarshal(data []byte, val interface{}) (err error) {
@@ -252,14 +251,14 @@ func Unmarshal(data []byte, val interface{}) (err error) {
 }
 
 func UnmarshalRequest(r io.Reader) (Request, error) {
-	var req Request;
+	var req Request
 
-	size, err := read4(r);
+	size, err := read4(r)
 	if err != nil {
 		return req, err
 	}
 
-	err = UnmarshalFrom(io.LimitReader(r, int64(size)), &req);
+	err = UnmarshalFrom(io.LimitReader(r, int64(size)), &req)
 
-	return req, err;
+	return req, err
 }
