@@ -112,22 +112,27 @@ func writeTag(w io.Writer, val reflect.Value) (err error) {
 	return
 }
 
+// EncodeTo encodes val and writes it to w, returning any error.
 func EncodeTo(w io.Writer, val interface{}) (err error) {
 	write1(w, VersionTag)
 	err = writeTag(w, reflect.ValueOf(val))
 	return
 }
 
+// Encode encodes val and returns it or an error.
 func Encode(val interface{}) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{})
 	err := EncodeTo(buf, val)
 	return buf.Bytes(), err
 }
 
+// Marshal is an alias for EncodeTo.
 func Marshal(w io.Writer, val interface{}) error {
 	return EncodeTo(w, val)
 }
 
+// MarshalResponse encodes val into a BURP Response struct and writes it to w,
+// returning any error.
 func MarshalResponse(w io.Writer, val interface{}) (err error) {
 	resp, err := Encode(val)
 

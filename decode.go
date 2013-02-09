@@ -216,6 +216,7 @@ func readTag(r io.Reader) (Term, error) {
 	return nil, ErrUnknownType
 }
 
+// DecodeFrom decodes a Term from r and returns it or an error.
 func DecodeFrom(r io.Reader) (Term, error) {
 	version, err := read1(r)
 
@@ -231,8 +232,11 @@ func DecodeFrom(r io.Reader) (Term, error) {
 	return readTag(r)
 }
 
+// Decode decodes a Term from data and returns it or an error.
 func Decode(data []byte) (Term, error) { return DecodeFrom(bytes.NewBuffer(data)) }
 
+// UnmarshalFrom decodes a value from r, stores it in val, and returns any
+// error encountered.
 func UnmarshalFrom(r io.Reader, val interface{}) (err error) {
 	result, _ := DecodeFrom(r)
 
@@ -250,10 +254,13 @@ func UnmarshalFrom(r io.Reader, val interface{}) (err error) {
 	return nil
 }
 
+// Unmarshal decodes a value from data, stores it in val, and returns any error
+// encountered.
 func Unmarshal(data []byte, val interface{}) (err error) {
 	return UnmarshalFrom(bytes.NewBuffer(data), val)
 }
 
+// UnmarshalRequest decodes a BURP from r and returns it as a Request.
 func UnmarshalRequest(r io.Reader) (Request, error) {
 	var req Request
 

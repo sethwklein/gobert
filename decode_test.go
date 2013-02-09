@@ -4,7 +4,30 @@ import (
 	"bytes"
 	"reflect"
 	"testing"
+	"fmt"
 )
+
+func ExampleDecode() {
+    i, err := Decode([]byte{131, 97, 42})
+    if err != nil {
+	    fmt.Println(err)
+    }
+    fmt.Printf("%#v\n", i)
+    s, err := Decode([]byte{131, 107, 0, 3, 102, 111, 111})
+    if err != nil {
+	    fmt.Println(err)
+    }
+    fmt.Printf("%#v\n", s)
+    a, err := Decode([]byte{131, 104, 1, 100, 0, 3, 102, 111, 111})
+    if err != nil {
+	    fmt.Println(err)
+    }
+    fmt.Printf("%#v\n", a)
+    // Output:
+    // 42
+    // "foo"
+    // []bert.Term{"foo"}
+}
 
 func TestDecode(t *testing.T) {
 	// Small Integer
